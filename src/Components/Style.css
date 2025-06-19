@@ -1,0 +1,60 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Inter", sans-serif;
+    
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #1c1e2e inset !important;
+  -webkit-text-fill-color: white !important;
+}
+
+.dropdown-item:hover{
+  color: #1c1e2e !important;
+  background-color: aliceblue !important;
+}
+
+#inp::selection {
+  background: #144EE3; /* ya koi bhi dark shade */
+  color: white;
+}
+
+
+@media screen and (max-width: 500px) {
+    #main{
+        height: auto !important;
+        padding-bottom: 130px !important;
+    }
+    #main-buttons{
+        padding: 0px !important;
+        margin-top: 20px !important;
+    }
+    #links h1{
+        font-size: 2rem !important;
+    }
+  form {
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 10px !important;
+  }
+
+  form input {
+    width: 100% !important;
+    margin: 10px 0 !important;
+  }
+
+  form button {
+    width: 100% !important;
+    margin-top: 10px !important;
+    height: 50px !important;
+  }
+
+  .short-url-display {
+    word-break: break-all;
+    text-align: center;
+  }
+}
