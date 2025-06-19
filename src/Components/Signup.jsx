@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 export default function Signup() {
 
   const [formData, setformData] = useState({ name: '', email: '', mobile: '', pass: '' });
-  const [errorMsg, setErrorMsg] = useState('');
 
   const navigate = useNavigate();
 

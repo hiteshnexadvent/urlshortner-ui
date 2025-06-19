@@ -34,9 +34,11 @@ export default function Main() {
       if (err.response && err.response.status === 429) {
         setErrorMsg(err.response.data.message); // show rate limit error
       } else {
-        setErrorMsg('Something went wrong. Try again later.');
+        setErrorMsg('Please add url.');
       }
-    });  }
+});
+    
+}
 
   useEffect(() => {
     
@@ -62,7 +64,7 @@ export default function Main() {
 
   
   return (
-    <div style={{ backgroundColor: '#0d0016', width: '100%', height: 'auto',paddingBottom:'160px' }} id='main'>
+    <div style={{ backgroundColor: '#0d0016', width: '100%', height: 'auto',paddingBottom:'50px' }} id='main'>
       
           
           <div className="container">
