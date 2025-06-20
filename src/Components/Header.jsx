@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 import './Style.css'
 import { Link, useNavigate } from 'react-router-dom'
 import UserContext from './UseContext'
@@ -38,7 +38,31 @@ export default function Header() {
     }
         }
     
-    }
+  }
+  
+  // ------------------------- useffect for check session
+
+  useEffect(() => {
+    const verifySession = async () => {
+      try {
+        const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/check-session`, {
+          withCredentials: true
+        });
+
+        if (res.data.loggedIn) {
+          setuserId(res.data.userId);
+        } else {
+          setuserId(null);
+        }
+      } catch (error) {
+        console.log('Session check failed', error);
+        setuserId(null);
+      }
+    };
+
+    verifySession();
+  }, []);
+
 
   return (
       <div style={{ backgroundColor: '#0d0016', width: '100%', height: 'auto' }} id='main'>

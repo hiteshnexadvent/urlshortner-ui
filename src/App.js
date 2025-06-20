@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import UserContext from './Components/UseContext';
 import Base from './Components/Base';
 import Premium from './Components/Premium';
+import VerifyOtp from './Components/VerifyOtp';
+import ForgetPw from './Components/ForgetPw';
 
 
 function App() {
@@ -38,6 +40,8 @@ function App() {
           <Route path='/register' element={<Signup></Signup>}></Route>
           <Route path='/login' element={<Login></Login>}></Route>
           <Route path='/premium' element={<Premium></Premium>}></Route>
+          <Route path='/verify' element={<VerifyOtp></VerifyOtp>}></Route>
+          <Route path='/forget' element={<ForgetPw></ForgetPw>}></Route>
         </Routes>
     </Router>
 
