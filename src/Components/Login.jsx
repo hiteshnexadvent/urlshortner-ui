@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import UserContext from './UseContext';
-import ReCAPTCHA from 'react-google-recaptcha';
+// import ReCAPTCHA from 'react-google-recaptcha';
 
 
 export default function Login() {
@@ -180,7 +180,6 @@ export default function Login() {
         <a href="/verify" style={{textDecoration:'none',color:'#b4b1b0a7'}}>Forget Password</a>
       </form>
       
-      <p>{message}</p>
 
 </div>
 
