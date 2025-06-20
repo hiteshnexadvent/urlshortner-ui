@@ -61,7 +61,8 @@ export default function Header() {
     };
 
     verifySession();
-  }, []);
+  }, [setuserId]);
+  
 
 
   return (
