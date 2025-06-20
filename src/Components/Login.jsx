@@ -9,9 +9,9 @@ export default function Login() {
 
   const [formData, setformData] = useState({ email: '', pass: '' });
 
-  const [captchaToken, setCaptchaToken] = useState(null);
+  // const [captchaToken, setCaptchaToken] = useState(null);
 
-  const [message, setMessage] = useState('');
+  // const [message, setMessage] = useState('');
 
 
 
@@ -30,17 +30,17 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!captchaToken) {
-      setMessage("❌ Please complete the reCAPTCHA.");
-      return;
-    }
+    // if (!captchaToken) {
+    //   setMessage("❌ Please complete the reCAPTCHA.");
+    //   return;
+    // }
 
     try {
       
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/login`, {
   email: formData.email,
   pass: formData.pass,
-  captcha: captchaToken,
+  // captcha: captchaToken,
 }, {
         headers: {
           'Content-Type':'application/json'
@@ -154,10 +154,10 @@ export default function Login() {
       />
         </label>
         
-        <ReCAPTCHA
+        {/* <ReCAPTCHA
   sitekey={process.env.REACT_APP_RECAPTCHA_SITE_KEY}
   onChange={handleCaptcha}
-/>
+/> */}
 
     <button 
       type="submit" 
@@ -176,9 +176,6 @@ export default function Login() {
     >
       Submit
         </button>
-        
-         
-
 
         <a href="/verify" style={{textDecoration:'none',color:'#b4b1b0a7'}}>Forget Password</a>
       </form>
