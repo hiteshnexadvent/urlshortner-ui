@@ -57,14 +57,47 @@ export default function QrScan() {
 
 
             } catch (error) {
-               console.error('History fetch failed:', error.message);
-setqrHistory([]);  // fallback to empty array to avoid crash
+              console.error('History fetch failed:', error.message);
+              setqrHistory([]);  // fallback to empty array to avoid crash
 
             }
 
         }
         fetchqr();
     }, [])
+  
+  // ----------------------------- download qr
+
+  const handleDownload = (imgUrl, fileNameBase) => {
+  const downloadImage = (format) => {
+    const canvas = document.createElement('canvas');
+    const img = new Image();
+    img.crossOrigin = 'anonymous'; // important for CORS
+
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      const dataUrl = canvas.toDataURL(`image/${format}`);
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = `${fileNameBase}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    };
+
+    img.src = imgUrl;
+  };
+
+  // Download both formats
+  downloadImage('png');
+  downloadImage('jpeg'); // for JPG use 'jpeg'
+};
+
 
   return (
     <div
@@ -188,6 +221,7 @@ setqrHistory([]);  // fallback to empty array to avoid crash
             <th style={thStyle}>Original Link</th>
                                       <th style={thStyle}>QR Image</th>
                                       <th style={thStyle}>Created Date</th>
+                                      <th style={thStyle}>Download</th>
 
           </tr>
         </thead>
@@ -208,7 +242,24 @@ setqrHistory([]);  // fallback to empty array to avoid crash
     month: 'short',
     year: 'numeric'
   })}
+              </td>
+              <td style={tdStyle}>
+  <button
+    onClick={() => handleDownload(item.qrImage, `qr-${index}`)}
+    style={{
+      backgroundColor: '#144EE3',
+      color: 'white',
+      padding: '6px 12px',
+      borderRadius: '8px',
+      border: 'none',
+      cursor: 'pointer',
+      fontWeight: '600',
+    }}
+  >
+    Download
+  </button>
 </td>
+
             </tr>
           ))}
         </tbody>
