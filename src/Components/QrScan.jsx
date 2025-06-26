@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { FaArrowAltCircleRight } from "react-icons/fa";
 import { jsPDF } from "jspdf";
 
@@ -12,6 +12,14 @@ export default function QrScan() {
   const [filterDays, setFilterDays] = useState(5);
   const [loading, setLoading] = useState(true);
   const [userRole, setUserRole] = useState("");
+
+  
+const filterQRHistory = useCallback((days, data = qrHistory) => {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const filtered = data.filter((qr) => new Date(qr.createdAt) >= cutoff);
+  setFilteredQRs(filtered);
+}, [qrHistory]); // include only necessary dependencies
 
   const handleChange = (e) => {
     setformData({ ...formData, [e.target.name]: e.target.value });
@@ -66,25 +74,32 @@ export default function QrScan() {
   }, []);
 
   useEffect(() => {
-    const fetchqr = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/fetchqr`,
-          { withCredentials: true }
-        );
-        setqrHistory(response.data.qr);
-        filterQRHistory(filterDays, response.data.qr);
-      } catch (error) {
-        console.error("History fetch failed:", error.message);
-        setqrHistory([]);
-        setFilteredQRs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchqr();
-  }, []);
+  const fetchqr = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/fetchqr`,
+        { withCredentials: true }
+      );
+      setqrHistory(response.data.qr);
+    } catch (error) {
+      console.error("History fetch failed:", error.message);
+      setqrHistory([]);
+      setFilteredQRs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchqr();
+  }, []); // ✅ only run once on mount
+  
+  useEffect(() => {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - filterDays);
+  const filtered = qrHistory.filter((qr) => new Date(qr.createdAt) >= cutoff);
+  setFilteredQRs(filtered);
+}, [qrHistory, filterDays]); // ✅ stable filtering logic
+
 
   const handleDownload = (imgUrl, fileNameBase) => {
     const downloadImage = (format) => {
@@ -120,13 +135,6 @@ export default function QrScan() {
     setTimeout(() => setLoading(false), 300);
   };
 
-  const filterQRHistory = (days, data = qrHistory) => {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-
-    const filtered = data.filter((qr) => new Date(qr.createdAt) >= cutoff);
-    setFilteredQRs(filtered);
-  };
 
   const downloadCSV = () => {
     if (filteredQRs.length === 0) return;

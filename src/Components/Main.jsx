@@ -4,6 +4,8 @@ import axios from "axios";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { FaLink } from "react-icons/fa"; 
+import { useCallback } from 'react';
+
 
 export default function Main() {
 
@@ -16,6 +18,14 @@ export default function Main() {
   const [filterDays, setFilterDays] = useState(7);
   const [filteredURLs, setFilteredURLs] = useState([]);
   const [loading, setLoading] = useState(false);
+
+ const filterURLHistory = useCallback((days, data = urlHistory) => {
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - days);
+  const filtered = data.filter((url) => new Date(url.createdAt) >= cutoff);
+  setFilteredURLs(filtered);
+}, [urlHistory]);
+
 
   const handleChange = (e) => {
     setoriginalUrl({ ...originalUrl, [e.target.name]: e.target.value });
@@ -51,6 +61,7 @@ export default function Main() {
       });
   }
 
+
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -81,11 +92,11 @@ export default function Main() {
     fetchplan();
   }, []);
 
-  useEffect(() => {
+ useEffect(() => {
   if (urlHistory.length > 0) {
     filterURLHistory(filterDays, urlHistory);
   }
-}, [urlHistory]);
+}, [urlHistory, filterDays, filterURLHistory]); 
 
 
   useEffect(() => {
@@ -104,12 +115,6 @@ export default function Main() {
     filterURLHistory(intDays, urlHistory);
   };
 
-  const filterURLHistory = (days, data = urlHistory) => {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    const filtered = data.filter((url) => new Date(url.createdAt) >= cutoff);
-    setFilteredURLs(filtered);
-  };
 
   const downloadCSV = () => {
     if (filteredURLs.length === 0) return;
