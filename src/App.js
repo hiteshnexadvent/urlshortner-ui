@@ -8,6 +8,7 @@ import Base from './Components/Base';
 import Premium from './Components/Premium';
 import VerifyOtp from './Components/VerifyOtp';
 import ForgetPw from './Components/ForgetPw';
+import Redirect from './Components/Redirect';
 
 
 function App() {
@@ -42,6 +43,9 @@ function App() {
           <Route path='/premium' element={<Premium></Premium>}></Route>
           <Route path='/verify' element={<VerifyOtp></VerifyOtp>}></Route>
           <Route path='/forget' element={<ForgetPw></ForgetPw>}></Route>
+{/* <Route path="/r/:shortUrl" element={<Redirect />} /> */}
+ <Route path="/redirect/:shortUrl" element={<Redirect />} />
+
         </Routes>
     </Router>
 

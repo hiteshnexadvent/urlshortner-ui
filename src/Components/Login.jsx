@@ -11,7 +11,7 @@ export default function Login() {
 
   // const [captchaToken, setCaptchaToken] = useState(null);
 
-  // const [message, setMessage] = useState('');
+  const [message, setMessage] = useState('');
 
 
 
@@ -62,8 +62,12 @@ export default function Login() {
 
       if (status === 404) {
         alert('User does not exist');
-      } else if (status === 401) {
-        alert('Incorrect password');
+      }
+      else if (status === 3) {
+        setMessage('Account temporarily locked for 1 minute due to multiple failed login attempts.' );
+        }
+      else if (status === 401) {
+        setMessage(error.response.data.message);
       } else {
         alert(message || 'Server error occurred');
       }
@@ -177,8 +181,12 @@ export default function Login() {
       Submit
         </button>
 
-        <a href="/verify" style={{textDecoration:'none',color:'#b4b1b0a7'}}>Forget Password</a>
+        <a href="/verify" style={{ textDecoration: 'none', color: '#b4b1b0a7' }}>Forget Password</a>
+        
+        <p style={{color:'#78b6ca'}}>{message}</p>
+
       </form>
+      
       
 
 </div>

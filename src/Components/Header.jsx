@@ -25,6 +25,7 @@ export default function Header() {
       alert(response.data.message); 
       setuserId(null); 
       navigate('/'); 
+      window.location.reload(); 
     } else {
       alert(response.data.message || 'Logout failed');
     }
@@ -55,7 +56,6 @@ export default function Header() {
           setuserId(null);
         }
       } catch (error) {
-        console.log('Session check failed', error);
         setuserId(null);
       }
     };

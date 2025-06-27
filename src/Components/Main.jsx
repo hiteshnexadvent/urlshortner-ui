@@ -1,35 +1,37 @@
-import React, { useEffect, useState } from 'react'
-import './Style.css'
+import React, { useEffect, useState } from "react";
+import "./Style.css";
 import axios from "axios";
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { FaLink } from "react-icons/fa"; 
-import { useCallback } from 'react';
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { FaLink } from "react-icons/fa";
+import { useCallback } from "react";
 
 export default function Main() {
-
-  const [originalUrl, setoriginalUrl] = useState({ url: '' });
-  const [shortUrl, setshortUrl] = useState('');
+  const [originalUrl, setoriginalUrl] = useState({ url: "", password: "" });
+  const [shortUrl, setshortUrl] = useState("");
   const [urlHistory, seturlHistory] = useState([]);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const [userRole, setUserRole] = useState('');
+  const [userRole, setUserRole] = useState("");
   const [filterDays, setFilterDays] = useState(7);
   const [filteredURLs, setFilteredURLs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showPasswordInput, setShowPasswordInput] = useState(false);
+  
 
- const filterURLHistory = useCallback((days, data = urlHistory) => {
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - days);
-  const filtered = data.filter((url) => new Date(url.createdAt) >= cutoff);
-  setFilteredURLs(filtered);
-}, [urlHistory]);
-
+  const filterURLHistory = useCallback(
+    (days, data = urlHistory) => {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      const filtered = data.filter((url) => new Date(url.createdAt) >= cutoff);
+      setFilteredURLs(filtered);
+    },
+    [urlHistory]
+  );
 
   const handleChange = (e) => {
     setoriginalUrl({ ...originalUrl, [e.target.name]: e.target.value });
-  }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -40,49 +42,63 @@ export default function Main() {
     }
 
     setLoading(true);
-    axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/short`, { originalUrl: originalUrl.url }, {
-      withCredentials: true
-    })
+    axios
+      .post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/short`,
+        {
+          originalUrl: originalUrl.url,
+          password: originalUrl.password || null,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+
       .then((res) => {
         setshortUrl(res.data.url.shortUrl);
-        setErrorMsg('');
-        console.log('API Response');
+        setErrorMsg("");
+        console.log("API Response");
       })
       .catch((err) => {
         console.log(err);
         if (err.response && err.response.status === 429) {
           setErrorMsg(err.response.data.message);
         } else {
-          setErrorMsg('Please add url.');
+          setErrorMsg("Please add url.");
         }
       })
       .finally(() => {
         setLoading(false);
       });
-  }
-
+  };
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/my-urls`, {
-          withCredentials: true
-        })
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/my-urls`,
+          {
+            withCredentials: true,
+          }
+        );
         seturlHistory([...response.data.urls].reverse());
       } catch (error) {
-        console.log('History fetch failed:', error.message);
+        console.log("History fetch failed:", error.message);
       }
-    }
+    };
 
     fetchHistory();
-  }, [])
+  }, []);
 
   useEffect(() => {
     const fetchplan = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/getUserRole`, {
-          withCredentials: true,
-        });
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/getUserRole`,
+          {
+            withCredentials: true,
+          }
+        );
         setUserRole(response.data.role);
       } catch (error) {
         console.log(error.message);
@@ -92,19 +108,18 @@ export default function Main() {
     fetchplan();
   }, []);
 
- useEffect(() => {
-  if (urlHistory.length > 0) {
-    filterURLHistory(filterDays, urlHistory);
-  }
-}, [urlHistory, filterDays, filterURLHistory]); 
-
+  useEffect(() => {
+    if (urlHistory.length > 0) {
+      filterURLHistory(filterDays, urlHistory);
+    }
+  }, [urlHistory, filterDays, filterURLHistory]);
 
   useEffect(() => {
     if (errorMsg || shortUrl) {
       const timer = setTimeout(() => {
-        setErrorMsg('');
-        setshortUrl('');
-      }, 5000);
+        setErrorMsg("");
+        setshortUrl("");
+      }, 120000);
       return () => clearTimeout(timer);
     }
   }, [errorMsg, shortUrl]);
@@ -114,7 +129,6 @@ export default function Main() {
     setFilterDays(intDays);
     filterURLHistory(intDays, urlHistory);
   };
-
 
   const downloadCSV = () => {
     if (filteredURLs.length === 0) return;
@@ -160,40 +174,57 @@ export default function Main() {
     doc.save("url_history.pdf");
   };
 
-  const urlsToDisplay = (userRole === 'Premium' || userRole === 'Advance') ? filteredURLs : urlHistory;
+  const urlsToDisplay =
+    userRole === "Premium" || userRole === "Advance"
+      ? filteredURLs
+      : urlHistory;
 
   return (
-    <div style={{ backgroundColor: '#0d0016', width: '100%', height: 'auto', paddingBottom: '50px' }} id='main'>
+    <div
+      style={{
+        backgroundColor: "#0d0016",
+        width: "100%",
+        height: "auto",
+        paddingBottom: "50px",
+      }}
+      id="main"
+    >
       <div className="container">
         <div className="row">
-          <div className="col-12" style={{ marginTop: '70px' }} id='links'>
-            <h1 style={{
-              fontSize: '60px',
-              fontWeight: '800',
-              background: 'linear-gradient(90deg, #144EE3, #EB568E)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>
+          <div className="col-12" style={{ marginTop: "70px" }} id="links">
+            <h1
+              style={{
+                fontSize: "60px",
+                fontWeight: "800",
+                background: "linear-gradient(90deg, #144EE3, #EB568E)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
               Shorten Your Loooong Links :)
             </h1>
 
-            <p style={{ marginTop: '30px', color: '#C9CED6' }}>
-              Linkely is an efficient and easy to use URL shortening service that streamlines your <br /> online experience.
+            <p style={{ marginTop: "30px", color: "#C9CED6" }}>
+              Linkely is an efficient and easy to use URL shortening service
+              that streamlines your <br /> online experience.
             </p>
 
-            <form onSubmit={handleSubmit} style={{
-              display: "flex",
-              alignItems: "center",
-              backgroundColor: "#1c1e2e",
-              borderRadius: "50px",
-              border: "4px solid #2d2f45",
-              padding: "5px",
-              maxWidth: "600px",
-              width: "100%",
-              margin: 'auto',
-              marginTop: '40px',
-              height: '76px'
-            }}>
+            <form
+              onSubmit={handleSubmit}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                backgroundColor: "#1c1e2e",
+                borderRadius: "50px",
+                border: "4px solid #2d2f45",
+                padding: "5px",
+                maxWidth: "600px",
+                width: "100%",
+                margin: "auto",
+                marginTop: "40px",
+                height: "76px",
+              }}
+            >
               <div style={{ padding: "0 15px", color: "#888" }}>
                 <FaLink />
               </div>
@@ -202,7 +233,7 @@ export default function Main() {
                 type="text"
                 placeholder="Enter the link here"
                 value={originalUrl.url}
-                name='url'
+                name="url"
                 onChange={handleChange}
                 style={{
                   flex: 1,
@@ -215,6 +246,77 @@ export default function Main() {
                 }}
                 className="custom-input"
               />
+              {userRole === "Premium" && (
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginLeft: "20px",
+                    gap: "12px",
+                  }}
+                >
+                  {/* ✅ Password Protection Checkbox + Label */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      backgroundColor: "#2d2f45",
+                      padding: "8px 12px",
+                      borderRadius: "30px",
+                      color: "#fff",
+                      fontSize: "14px",
+                      whiteSpace: "nowrap",
+                      marginRight: "5px",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      id="togglePassword"
+                      checked={showPasswordInput}
+                      onChange={(e) => {
+                        setShowPasswordInput(e.target.checked);
+                        if (!e.target.checked) {
+                          setoriginalUrl((prev) => ({ ...prev, password: "" }));
+                        }
+                      }}
+                      style={{
+                        marginRight: "8px",
+                        width: "16px",
+                        height: "16px",
+                        accentColor: "#007bff", // custom checkbox color
+                        cursor: "pointer",
+                      }}
+                    />
+                    <label
+                      htmlFor="togglePassword"
+                      style={{ cursor: "pointer" }}
+                    >
+                      Protect URL
+                    </label>
+                  </div>
+
+                  {/* ✅ Password Input Field */}
+                  {showPasswordInput && (
+                    <input
+                      type="text"
+                      name="password"
+                      placeholder="Set a password"
+                      value={originalUrl.password}
+                      onChange={handleChange}
+                      style={{
+                        padding: "12px",
+                        fontSize: "14px",
+                        borderRadius: "30px",
+                        border: "2px solid #2d2f45",
+                        backgroundColor: "#1c1e2e",
+                        color: "#fff",
+                        width: "180px",
+                        outline: "none",
+                      }}
+                    />
+                  )}
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -229,46 +331,63 @@ export default function Main() {
                   marginRight: "0px",
                   cursor: "pointer",
                   whiteSpace: "nowrap",
-                  height: '60px',
-                  width: '178px'
+                  height: "60px",
+                  width: "178px",
                 }}
               >
-                {loading ? 'Loading...' : 'Shorten Now!'}
+                {loading ? "Loading..." : "Shorten Now!"}
               </button>
             </form>
 
             {shortUrl && (
-              <div style={{ marginTop: "20px", color: "#fff" }} className="short-url-display">
+              <div
+                style={{ marginTop: "20px", color: "#fff" }}
+                className="short-url-display"
+              >
                 <p>Shortened URL:</p>
                 <a
-                  href={`${process.env.REACT_APP_API_BASE_URL}/${shortUrl}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  style={{ color: '#00BFFF', textDecoration: 'underline' }}
+                  href={`${process.env.REACT_APP_API_BASE_URL}/r/${shortUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: "#00BFFF", textDecoration: "underline" }}
                 >
-                  {`${process.env.REACT_APP_API_BASE_URL}/${shortUrl}`}
+                  {`${process.env.REACT_APP_API_BASE_URL}/r/${shortUrl}`}
                 </a>
               </div>
             )}
 
-            <h4 style={{ fontSize: '15px', marginTop: '30px', color: '#8e978e', fontWeight: '600' }}>{errorMsg}</h4>
+            <h4
+              style={{
+                fontSize: "15px",
+                marginTop: "30px",
+                color: "#8e978e",
+                fontWeight: "600",
+              }}
+            >
+              {errorMsg}
+            </h4>
           </div>
 
-          {(userRole === 'Premium' || userRole === 'Advance') && (
-            <div style={{
-              marginTop: "50px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-              padding: "0 10px",
-            }}>
+          {(userRole === "Premium" || userRole === "Advance") && (
+            <div
+              style={{
+                marginTop: "50px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                padding: "0 10px",
+              }}
+            >
               <div>
-                <label htmlFor="dateFilterTop" style={{
-                  color: "white",
-                  marginRight: "10px",
-                  fontWeight: "600",
-                }}>
+                <label
+                  htmlFor="dateFilterTop"
+                  style={{
+                    color: "white",
+                    marginRight: "10px",
+                    fontWeight: "600",
+                  }}
+                >
                   Filter:
                 </label>
                 <select
@@ -287,25 +406,31 @@ export default function Main() {
               </div>
 
               <div>
-                <button onClick={downloadCSV} style={{
-                  backgroundColor: "#28a745",
-                  color: "white",
-                  padding: "8px 16px",
-                  marginRight: "10px",
-                  borderRadius: "5px",
-                  border: "none",
-                  cursor: "pointer",
-                }}>
+                <button
+                  onClick={downloadCSV}
+                  style={{
+                    backgroundColor: "#28a745",
+                    color: "white",
+                    padding: "8px 16px",
+                    marginRight: "10px",
+                    borderRadius: "5px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
                   Download CSV
                 </button>
-                <button onClick={downloadPDF} style={{
-                  backgroundColor: "#dc3545",
-                  color: "white",
-                  padding: "8px 16px",
-                  borderRadius: "5px",
-                  border: "none",
-                  cursor: "pointer",
-                }}>
+                <button
+                  onClick={downloadPDF}
+                  style={{
+                    backgroundColor: "#dc3545",
+                    color: "white",
+                    padding: "8px 16px",
+                    borderRadius: "5px",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
                   Download PDF
                 </button>
               </div>
@@ -313,21 +438,64 @@ export default function Main() {
           )}
 
           {/* BASIC PLAN USERS MESSAGE */}
-          {userRole === 'Basic' && (
-            <p style={{ color: 'gray', marginTop: '40px', textAlign: 'center' }}>
+          {userRole === "Basic" && (
+            <p
+              style={{ color: "gray", marginTop: "40px", textAlign: "center" }}
+            >
               URL history is only available for Advance and Premium users.
             </p>
           )}
 
           {/* TABLE ONLY FOR ADVANCE/PREMIUM USERS */}
-          {(userRole === 'Premium' || userRole === 'Advance') && (
-            <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px', backgroundColor: '#111', borderRadius: '12px', overflow: 'hidden' }}>
+          {(userRole === "Premium" || userRole === "Advance") && (
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                marginTop: "20px",
+                backgroundColor: "#111",
+                borderRadius: "12px",
+                overflow: "hidden",
+              }}
+            >
               <thead>
-                <tr style={{ backgroundColor: '#222', color: '#fff' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #333' }}>Short Link</th>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #333' }}>Original Link</th>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #333' }}>Clicks</th>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #333' }}>Date</th>
+                <tr style={{ backgroundColor: "#222", color: "#fff" }}>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      borderBottom: "1px solid #333",
+                    }}
+                  >
+                    Short Link
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      borderBottom: "1px solid #333",
+                    }}
+                  >
+                    Original Link
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      borderBottom: "1px solid #333",
+                    }}
+                  >
+                    Clicks
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px",
+                      textAlign: "left",
+                      borderBottom: "1px solid #333",
+                    }}
+                  >
+                    Date
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -335,26 +503,95 @@ export default function Main() {
                   .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                   .slice(0, 5)
                   .map((url, index) => (
-                    <tr key={index} style={{ backgroundColor: index % 2 === 0 ? '#1a1a1a' : '#131313' }}>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #333', textAlign: 'start' }}>
-                        <a href={`${process.env.REACT_APP_API_BASE_URL}/${url.shortUrl}`} target="_blank" rel="noreferrer" style={{ color: '#C9CED6', textDecoration: 'none', fontSize: '13px' }}>
+                    <tr
+                      key={index}
+                      style={{
+                        backgroundColor:
+                          index % 2 === 0 ? "#1a1a1a" : "#131313",
+                      }}
+                    >
+                      <td
+                        style={{
+                          padding: "12px",
+                          borderBottom: "1px solid #333",
+                          textAlign: "start",
+                        }}
+                      >
+                        <a
+                          href={`${process.env.REACT_APP_API_BASE_URL}/r/${url.shortUrl}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            color: "#C9CED6",
+                            textDecoration: "none",
+                            fontSize: "13px",
+                          }}
+                        >
                           {`${process.env.REACT_APP_API_BASE_URL}/${url.shortUrl}`}
                         </a>
                       </td>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #333' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <img src={`https://www.google.com/s2/favicons?sz=64&domain_url=${new URL(url.originalUrl).hostname}`} alt="icon" width="16" height="16" />
-                          <a href={url.originalUrl} target="_blank" rel="noreferrer" style={{ color: '#C9CED6', textDecoration: 'none', fontSize: '13px', wordBreak: 'break-all' }}>
-                            {url.originalUrl.length > 50 ? url.originalUrl.slice(0, 50) + '...' : url.originalUrl}
+                      <td
+                        style={{
+                          padding: "12px",
+                          borderBottom: "1px solid #333",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                          }}
+                        >
+                          <img
+                            src={`https://www.google.com/s2/favicons?sz=64&domain_url=${
+                              new URL(url.originalUrl).hostname
+                            }`}
+                            alt="icon"
+                            width="16"
+                            height="16"
+                          />
+                          <a
+                            href={url.originalUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              color: "#C9CED6",
+                              textDecoration: "none",
+                              fontSize: "13px",
+                              wordBreak: "break-all",
+                            }}
+                          >
+                            {url.originalUrl.length > 50
+                              ? url.originalUrl.slice(0, 50) + "..."
+                              : url.originalUrl}
                           </a>
                         </div>
                       </td>
-                      <td style={{ padding: '12px', borderBottom: '1px solid #333', textAlign: 'start', color: '#C9CED6', fontSize: '13px' }}>{url.clicks}</td>
-                      <td style={{ fontSize: '13px', padding: '12px', borderBottom: '1px solid #333', textAlign: 'start', color: '#C9CED6' }}>
-                        {new Date(url.createdAt).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: '2-digit',
-                          year: 'numeric',
+                      <td
+                        style={{
+                          padding: "12px",
+                          borderBottom: "1px solid #333",
+                          textAlign: "start",
+                          color: "#C9CED6",
+                          fontSize: "13px",
+                        }}
+                      >
+                        {url.clicks}
+                      </td>
+                      <td
+                        style={{
+                          fontSize: "13px",
+                          padding: "12px",
+                          borderBottom: "1px solid #333",
+                          textAlign: "start",
+                          color: "#C9CED6",
+                        }}
+                      >
+                        {new Date(url.createdAt).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "2-digit",
+                          year: "numeric",
                         })}
                       </td>
                     </tr>
@@ -362,9 +599,8 @@ export default function Main() {
               </tbody>
             </table>
           )}
-
         </div>
       </div>
     </div>
-  )
+  );
 }
