@@ -3,7 +3,7 @@ import './Style.css'
 import { Link, useNavigate } from 'react-router-dom'
 import UserContext from './UseContext'
 import axios from 'axios';
-
+import { toast } from 'react-toastify';
 
 export default function Header() {
 
@@ -11,35 +11,46 @@ export default function Header() {
     
     const navigate = useNavigate();
     
-    const handleLogout = async(e) => {
-        e.preventDefault();
+    const handleLogout = async (e) => {
+    e.preventDefault();
 
-        try {
-            
-            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/logout`, {
-                withCredentials: true
-            });
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/logout`, {
+      withCredentials: true
+    });
 
-          
     if (response.status === 200 && response.data.success) {
-      alert(response.data.message); 
-      setuserId(null); 
-      navigate('/'); 
-      window.location.reload(); 
+      toast.success(response.data.message, {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+      });
+
+      setTimeout(() => {
+        setuserId(null);
+        navigate('/');
+        window.location.reload();
+      }, 2000);
     } else {
-      alert(response.data.message || 'Logout failed');
+      toast.error(response.data.message || 'Logout failed', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: true,
+        progress: undefined,
+      });
     }
 
-        }
-        catch (error) {
-             if (error.response) {
-      alert(error.response.data.message || 'Logout error occurred');
-    } else {
-      alert('Network/server error');
-    }
-        }
-    
+  } catch (error) {
+    toast.error((error.response && error.response.data.message) || 'Network/server error');
   }
+};
   
   // ------------------------- useffect for check session
 
@@ -72,12 +83,12 @@ export default function Header() {
         <div className="row">
           <div className="col-lg-3 col-12"></div>
           <div className="col-lg-3 col-12"></div>
-          <div className="col-lg-6 col-12" style={{padding:'50px'}}  id='main-buttons'>
+          <div className="col-lg-6 col-md-12 col-sm-12 col-12 text-end" style={{padding:'50px'}}  id='main-buttons'>
 
             {userId && userId.name ? (
                            <div className="dropdown" style={{ marginLeft: "50px" }}>
       <button
-        className="btn btn-secondary dropdown-toggle"
+        className="btn btn-secondary dropdown-toggle me-4"
         type="button"
         id="dropdownMenuButton"
         data-bs-toggle="dropdown"
@@ -107,7 +118,7 @@ export default function Header() {
                 <button style={{width:'120px',padding:'8px',borderRadius:'20px',color:'white',backgroundColor:'transparent',border:'2px solid #2d2f45'}}>Log In</button>
             </Link>
             <Link to='/register'>
-                <button style={{width:'120px',padding:'8px',borderRadius:'20px',color:'white',backgroundColor:'#144EE3',border:'2px solid #2d2f45',marginLeft:'40px'}}>Register</button>
+                <button style={{width:'120px',padding:'8px',borderRadius:'20px',color:'white',backgroundColor:'#144EE3',border:'2px solid #2d2f45',marginLeft:'40px',marginRight:'10px'}}>Register</button>
             </Link>
                               </div>
                       )

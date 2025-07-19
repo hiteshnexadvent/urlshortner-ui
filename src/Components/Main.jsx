@@ -90,23 +90,29 @@ export default function Main() {
     fetchHistory();
   }, []);
 
-  useEffect(() => {
-    const fetchplan = async () => {
-      try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/getUserRole`,
-          {
-            withCredentials: true,
-          }
-        );
-        setUserRole(response.data.role);
-      } catch (error) {
-        console.log(error.message);
-      }
-    };
 
-    fetchplan();
-  }, []);
+useEffect(() => {
+  const fetchplan = async () => {
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/getUserRole`,
+        { withCredentials: true }
+      );
+      
+      if (response.data.isLoggedIn) {
+        setUserRole(response.data.role);  // This will be: "basic", "advance", or "premium"
+      } else {
+        setUserRole(null); // or some fallback
+      }
+
+    } catch (error) {
+      console.log("Fetch role error:", error.message);
+    }
+  };
+
+  fetchplan();
+}, []);
+
 
   useEffect(() => {
     if (urlHistory.length > 0) {
@@ -247,46 +253,50 @@ export default function Main() {
                 className="custom-input"
               />
               {userRole === "Premium" && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginLeft: "20px",
-                    gap: "12px",
-                  }}
-                >
-                  {/* ✅ Password Protection Checkbox + Label */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      backgroundColor: "#2d2f45",
-                      padding: "8px 12px",
-                      borderRadius: "30px",
-                      color: "#fff",
-                      fontSize: "14px",
+               <div
+  style={{
+    display: "flex",
+    flexDirection: "column", // vertical stacking
+    alignItems: "flex-start", // align left
+    gap: "10px", // spacing between checkbox and input
+    marginBottom: "10px",
+  }}
+>
+                  {/* ✅ Checkbox Protect URL */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      backgroundColor: "#2d2f45",
+      padding: "8px 12px",
+      borderRadius: "30px",
+      color: "#fff",
+      fontSize: "14px",
                       whiteSpace: "nowrap",
-                      marginRight: "5px",
-                    }}
-                  >
+                      marginRight: '10px',
+      marginTop:'10px'
+    }}
+    id="protect-url"
+  >
+
                     <input
-                      type="checkbox"
-                      id="togglePassword"
-                      checked={showPasswordInput}
-                      onChange={(e) => {
-                        setShowPasswordInput(e.target.checked);
-                        if (!e.target.checked) {
-                          setoriginalUrl((prev) => ({ ...prev, password: "" }));
-                        }
-                      }}
-                      style={{
-                        marginRight: "8px",
-                        width: "16px",
-                        height: "16px",
-                        accentColor: "#007bff", // custom checkbox color
-                        cursor: "pointer",
-                      }}
-                    />
+      type="checkbox"
+      id="togglePassword"
+      checked={showPasswordInput}
+      onChange={(e) => {
+        setShowPasswordInput(e.target.checked);
+        if (!e.target.checked) {
+          setoriginalUrl((prev) => ({ ...prev, password: "" }));
+        }
+      }}
+      style={{
+        marginRight: "8px",
+        width: "16px",
+        height: "16px",
+        accentColor: "#007bff",
+        cursor: "pointer",
+      }}
+    />
                     <label
                       htmlFor="togglePassword"
                       style={{ cursor: "pointer" }}
@@ -297,24 +307,24 @@ export default function Main() {
 
                   {/* ✅ Password Input Field */}
                   {showPasswordInput && (
-                    <input
-                      type="text"
-                      name="password"
-                      placeholder="Set a password"
-                      value={originalUrl.password}
-                      onChange={handleChange}
-                      style={{
-                        padding: "12px",
-                        fontSize: "14px",
-                        borderRadius: "30px",
-                        border: "2px solid #2d2f45",
-                        backgroundColor: "#1c1e2e",
-                        color: "#fff",
-                        width: "180px",
-                        outline: "none",
-                      }}
-                    />
-                  )}
+    <input
+      type="text"
+      name="password"
+      placeholder="Set a password"
+      value={originalUrl.password}
+      onChange={handleChange}
+      style={{
+        padding: "12px",
+        fontSize: "14px",
+        borderRadius: "30px",
+        border: "2px solid #2d2f45",
+        backgroundColor: "#1c1e2e",
+        color: "#fff",
+        width: "180px",
+        outline: "none",
+      }}
+    />
+  )}
                 </div>
               )}
 
@@ -386,7 +396,7 @@ export default function Main() {
                     color: "white",
                     marginRight: "10px",
                     fontWeight: "600",
-                  }}
+                  }} id="filter"
                 >
                   Filter:
                 </label>
@@ -446,18 +456,21 @@ export default function Main() {
             </p>
           )}
 
+          
           {/* TABLE ONLY FOR ADVANCE/PREMIUM USERS */}
-          {(userRole === "Premium" || userRole === "Advance") && (
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                marginTop: "20px",
-                backgroundColor: "#111",
-                borderRadius: "12px",
-                overflow: "hidden",
-              }}
-            >
+{(userRole === "Premium" || userRole === "Advance") && (
+  <div style={{ overflowX: "auto", width: "100%" }}>
+    <table
+      style={{
+        width: "100%",
+        borderCollapse: "collapse",
+        marginTop: "20px",
+        backgroundColor: "#111",
+        borderRadius: "12px",
+        overflow: "hidden",
+        minWidth: "600px", // add this to maintain layout on small screens
+      }}
+    >
               <thead>
                 <tr style={{ backgroundColor: "#222", color: "#fff" }}>
                   <th
@@ -499,6 +512,9 @@ export default function Main() {
                 </tr>
               </thead>
               <tbody>
+
+          
+
                 {urlsToDisplay
                   .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                   .slice(0, 5)
@@ -597,7 +613,8 @@ export default function Main() {
                     </tr>
                   ))}
               </tbody>
-            </table>
+              </table>
+              </div>
           )}
         </div>
       </div>

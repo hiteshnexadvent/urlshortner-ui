@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-
+import { toast } from 'react-toastify';
 
 export default function Signup() {
 
@@ -28,29 +28,86 @@ export default function Signup() {
       })
 
        if (response.status === 201) {
-      alert('✅ User registered successfully');
+         toast.success(response.data.message, {
+                   position: 'top-right',
+                   autoClose: 2000,
+                   hideProgressBar: false,
+                   closeOnClick: true,
+                   pauseOnHover: false,
+                   draggable: true,
+                   progress: undefined,
+                 });
       navigate('/login');
     }
 
     }
-    catch (err) {
-  if (err.response) {
-    if (err.response.status === 409) {
-      alert('⚠️ User with this email already exists');
-    } else if (err.response.status === 400 && err.response.data.message) {
-      // Show validation error from backend
-      alert(`⚠️ ${err.response.data.message}`);
-    } else if (err.response.status === 500) {
-      alert('❌ Server error occurred. Please try again later.');
-    } else {
-      alert(`⚠️ Unexpected error: ${err.response.status}`);
-    }
+ catch (err) {
+  const status = err.response?.status;
+  const message = err.response?.data?.message;
+
+  if (status === 409) {
+    toast.error('⚠️ User with this email already exists', {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
+  } else if (status === 400 && message) {
+    toast.error(`⚠️ ${message}`, {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
+  } else if (status === 500) {
+    toast.error('❌ Server error occurred. Please try again later.', {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
+  } else if (err.response) {
+    toast.error(`⚠️ Unexpected error: ${status}`, {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
   } else if (err.request) {
-    alert('❗ No response from server. Check your internet connection.');
+    toast.error('❗ No response from server. Check your internet connection.', {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
   } else {
-    alert(`❗ Error: ${err.message}`);
+    toast.error(`❗ Error: ${err.message}`, {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
   }
 }
+
 
 
 

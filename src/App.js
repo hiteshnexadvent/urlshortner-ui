@@ -9,6 +9,8 @@ import Premium from './Components/Premium';
 import VerifyOtp from './Components/VerifyOtp';
 import ForgetPw from './Components/ForgetPw';
 import Redirect from './Components/Redirect';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function App() {
@@ -32,19 +34,21 @@ function App() {
   return (
 
     <UserContext.Provider value={{userId,setuserId}}>
-
-    <div className="App">
+ 
+      <div className="App">
+        <ToastContainer />
       
-      <Router>
-        <Routes>
+        <Router>
+          
+          <Routes>
+            
           <Route path='/' element={<Base></Base>}></Route>
           <Route path='/register' element={<Signup></Signup>}></Route>
           <Route path='/login' element={<Login></Login>}></Route>
           <Route path='/premium' element={<Premium></Premium>}></Route>
           <Route path='/verify' element={<VerifyOtp></VerifyOtp>}></Route>
           <Route path='/forget' element={<ForgetPw></ForgetPw>}></Route>
-{/* <Route path="/r/:shortUrl" element={<Redirect />} /> */}
- <Route path="/redirect/:shortUrl" element={<Redirect />} />
+          <Route path="/redirect/:shortUrl" element={<Redirect />} />
 
         </Routes>
     </Router>

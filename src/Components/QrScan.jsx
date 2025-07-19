@@ -2,9 +2,15 @@ import axios from "axios";
 import React, { useCallback, useEffect, useState } from "react";
 import { FaArrowAltCircleRight } from "react-icons/fa";
 import { jsPDF } from "jspdf";
+import "./Style.css";
 
 export default function QrScan() {
-  const [formData, setformData] = useState({ url: "" });
+const [formData, setformData] = useState({
+  url: "",
+  colorDark: "#000000",
+  colorLight: "#ffffff",
+  logoImage: null,
+});
   const [qrImage, setQrImage] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
   const [qrHistory, setqrHistory] = useState([]);
@@ -22,25 +28,44 @@ const filterQRHistory = useCallback((days, data = qrHistory) => {
 }, [qrHistory]); // include only necessary dependencies
 
   const handleChange = (e) => {
-    setformData({ ...formData, [e.target.name]: e.target.value });
-  };
+  const { name, value } = e.target;
+  setformData({ ...formData, [name]: value });
+};
+
+const handleFileChange = (e) => {
+  setformData({ ...formData, logoImage: e.target.files[0] });
+};
 
   const handleSubmit = async (e, withLogo = false) => {
   e.preventDefault();
 
   try {
+    const formDataToSend = new FormData();
+    formDataToSend.append("url", formData.url);
+    formDataToSend.append("withLogo", withLogo);
+
+    // If user is Premium and chose logo
+    if (withLogo && formData.logoImage) {
+      formDataToSend.append("logoImage", formData.logoImage);
+    }
+
+    // Optional: Add colors
+    formDataToSend.append("colorDark", formData.colorDark || "#000000");
+    formDataToSend.append("colorLight", formData.colorLight || "#ffffff");
+
     const response = await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/qrscan`,
-      { ...formData, withLogo },
+      formDataToSend,
       {
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "multipart/form-data",
         },
         withCredentials: true,
       }
     );
 
     setQrImage(response.data.qrImage);
+    setErrorMsg("");
   } catch (err) {
     if (err.response) {
       if (err.response.status === 429) {
@@ -195,11 +220,11 @@ const filterQRHistory = useCallback((days, data = qrHistory) => {
         width: "100%",
         height: "auto",
         paddingBottom: "160px",
-      }}
+      }} id="qr"
     >
       <div className="container">
         <div
-          className="row"
+          className="row qr-row1"
           style={{
             borderRadius: "20px",
             backgroundColor: "white",
@@ -208,7 +233,7 @@ const filterQRHistory = useCallback((days, data = qrHistory) => {
           }}
         >
           <div
-            className="col-lg-6 col-12"
+            className="col-lg-6 col-md-6 col-12"
             style={{ textAlign: "start", padding: "20px" }}
           >
             <h2 style={{ fontWeight: "600" }}>Create a QR Code</h2>
@@ -218,61 +243,57 @@ const filterQRHistory = useCallback((days, data = qrHistory) => {
   <h4 style={{ marginTop: "70px", fontWeight: "600" }}>
     Enter your QR Code destination
   </h4>
+
+  {/* URL Input */}
   <input
     type="text"
     name="url"
     placeholder="https://example.com/my-long-url"
-    style={{
-      width: "80%",
-      padding: "10px",
-      border: "1px solid #dfdfda",
-      borderRadius: "5px",
-    }}
+    style={inputStyle}
     onChange={handleChange}
     value={formData.url}
   />
+
+  {/* Premium Options */}
+  {userRole === "Premium" && (
+    <>
+      <div style={{ marginTop: "10px" }}>
+        <label>Choose Foreground Color: </label>
+        <input type="color" name="colorDark" value={formData.colorDark} onChange={handleChange} />
+      </div>
+
+      <div style={{ marginTop: "10px" }}>
+        <label>Choose Background Color: </label>
+        <input type="color" name="colorLight" value={formData.colorLight} onChange={handleChange} />
+      </div>
+
+      <div style={{ marginTop: "10px" }}>
+        <label>Upload Logo Image: </label>
+        <input type="file" name="logoImage" accept="image/*" onChange={handleFileChange} />
+      </div>
+    </>
+  )}
+
   {/* Normal QR Button */}
-  <button
-    type="submit"
-    onClick={(e) => handleSubmit(e, false)}
-    style={{
-      marginTop: "20px",
-      padding: "10px",
-      backgroundColor: "#144EE3",
-      border: "none",
-      color: "white",
-      borderRadius: "12px",
-      fontWeight: "600",
-      marginRight: "10px",
-    }}
-  >
+  <button type="submit" onClick={(e) => handleSubmit(e, false)} style={buttonStyleBlue}>
     Get QR Code
     <FaArrowAltCircleRight style={{ fontSize: "1.5rem", marginLeft: "7px" }} />
   </button>
 
-  {/* With Logo QR Button - Only for Premium users */}
+  {/* With Logo QR Button */}
   {userRole === "Premium" && (
-    <button
-      onClick={(e) => handleSubmit(e, true)}
-      style={{
-        marginTop: "20px",
-        padding: "10px",
-        backgroundColor: "#28a745",
-        border: "none",
-        color: "white",
-        borderRadius: "12px",
-        fontWeight: "600",
-      }}
-    >
+    <button onClick={(e) => handleSubmit(e, true)} style={buttonStyleGreen}>
       Get QR Code With Logo
       <FaArrowAltCircleRight style={{ fontSize: "1.5rem", marginLeft: "7px" }} />
-    </button>
+                </button>
+                
   )}
 </form>
 
+
           </div>
 
-          <div className="col-lg-6 col-12">
+          <div className="col-lg-6 col-md-6 col-12">
             <div
               className="box"
               style={{
@@ -333,7 +354,7 @@ const filterQRHistory = useCallback((days, data = qrHistory) => {
                   color: "white",
                   marginRight: "10px",
                   fontWeight: "600",
-                }}
+                }} id="filter"
               >
                 Filter:
               </label>
@@ -526,4 +547,33 @@ const tdStyle = {
   verticalAlign: "middle",
   color: "#8f8f8f",
   fontSize: "1rem",
+};
+
+const inputStyle = {
+  width: "80%",
+  padding: "10px",
+  border: "1px solid #dfdfda",
+  borderRadius: "5px",
+  backgroundColor:'transparent',
+};
+
+const buttonStyleBlue = {
+  marginTop: "20px",
+  padding: "10px",
+  backgroundColor: "#144EE3",
+  border: "none",
+  color: "white",
+  borderRadius: "12px",
+  fontWeight: "600",
+  marginRight: "10px",
+};
+
+const buttonStyleGreen = {
+  marginTop: "20px",
+  padding: "10px",
+  backgroundColor: "#28a745",
+  border: "none",
+  color: "white",
+  borderRadius: "12px",
+  fontWeight: "600",
 };

@@ -2,6 +2,7 @@ import axios from 'axios';
 import React, { useContext, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import UserContext from './UseContext';
+import { toast } from 'react-toastify';
 // import ReCAPTCHA from 'react-google-recaptcha';
 
 
@@ -38,49 +39,68 @@ export default function Login() {
     try {
       
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/login`, {
-  email: formData.email,
-  pass: formData.pass,
-  // captcha: captchaToken,
-}, {
+        email: formData.email,
+        pass: formData.pass,
+        // captcha: captchaToken,
+      }, {
         headers: {
-          'Content-Type':'application/json'
+          'Content-Type': 'application/json'
         },
         withCredentials: true
       })
-
-      if (response.status === 200 || response.data.success) {
-        alert('Login successful');
-        setuserId(response.data.userId)
+      if (response.status === 200 && response.data.success) {
+        toast.success(response.data.message, {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+        });
+        setuserId(response.data.userId);
         navigate('/');
+      }
+
+
     }
 
-    } catch (error) {
-      
+    catch (error) {
       if (error.response) {
-      const status = error.response.status;
-      const message = error.response.data.message;
+        const status = error.response.status;
+        const message = error.response.data.message;
 
-      if (status === 404) {
-        alert('User does not exist');
-      }
-      else if (status === 3) {
-        setMessage('Account temporarily locked for 1 minute due to multiple failed login attempts.' );
+        if (status === 404) {
+          toast.error('User does not exist', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        } else if (status === 3 || error.response.data.code === 3) {
+          toast.error('Account temporarily locked for 24 hours due to multiple failed login attempts.', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        } else if (status === 401) {
+          toast.error(message, {
+            position: 'top-right',
+            autoClose: 3000,
+          });
+        } else {
+          toast.error(message || 'Server error occurred', {
+            position: 'top-right',
+            autoClose: 3000,
+          });
         }
-      else if (status === 401) {
-        setMessage(error.response.data.message);
       } else {
-        alert(message || 'Server error occurred');
+        toast.error('Network or server error', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
       }
-    } else {
-      alert('Network or server error');
     }
-
-
-    }
-  }
 
  
-
+  }
 
   return (
    <div style={{ 

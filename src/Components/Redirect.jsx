@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import "./Style.css";
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Header from './Header';
@@ -55,7 +56,7 @@ export default function Redirect() {
           <Header></Header>
           
       {isProtected ? (
-  <div style={{ padding: '40px', textAlign: 'center' }}>
+  <div style={{ padding: '40px', textAlign: 'center' }} id='redirect'>
     <h2 style={{
       fontSize: '60px',
       fontWeight: '800',

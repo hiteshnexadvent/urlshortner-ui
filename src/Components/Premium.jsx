@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import "./Style.css";
 import axios from "axios";
 import Header from './Header';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
 
 export default function Premium() {
   const [userPlan, setUserPlan] = useState(null);
@@ -28,25 +31,51 @@ export default function Premium() {
         plan
       }, { withCredentials: true });
 
-      if (response.status === 200) {
-        alert(response.data.message);
-        setUserPlan(plan); 
+      if (response.status === 200 && response.data.success) {
+        toast.success(response.data.message, {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: true,
+          progress: undefined,
+        });
+        setUserPlan(plan);
       }
     } catch (error) {
-      const status = error.response?.status;
-      const message = error.response?.data?.message || "Server Error";
-      if ([400, 401, 404, 409].includes(status)) {
-        alert(message);
-      } else {
-        alert('Server Error');
-      }
-    }
+  const status = error.response?.status;
+  const message = error.response?.data?.message || "Server Error";
+
+  if ([400, 401, 404, 409].includes(status)) {
+    toast.error(message, {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
+  } else {
+    toast.error("Something went wrong. Please try again later.", {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+      progress: undefined,
+    });
+  }
+}
+
   }
 
   if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
 
   return (
-    <div style={{ backgroundColor: '#000214', width: '100%', height: 'auto', paddingBottom: '50px', color: 'white', fontFamily: 'Arial, sans-serif' }}>
+    <div style={{ backgroundColor: '#000214', width: '100%', height: 'auto', paddingBottom: '50px', color: 'white', fontFamily: 'Arial, sans-serif' }} id='qr'>
       <Header />
       <h1 style={{ textAlign: 'center', fontSize: '48px', marginTop: '40px', marginBottom: '20px', color: '#fff', fontWeight: '700' }}>Link Shorten Plans</h1>
 
@@ -116,76 +145,83 @@ export default function Premium() {
       </div>
 
       {/* ------------------ Comparison Table ------------------ */}
+      
+
       <div className="container">
-        <div className="row mt-5">
-          <h1 style={{ fontWeight: '700' }}>Detailed Feature Comparison</h1>
-          <div className="col-12 mt-3">
-            <table style={{ borderCollapse: 'collapse', width: '100%' }}>
-              <tbody>
-                <tr>
-                  <th style={thStyle} colSpan={5}>Link Management</th>
-                </tr>
-                <tr>
-                  <td style={tdStyle}>Short Links</td>
-                  <td style={tdStyle}>5/mo</td>
-                  <td style={tdStyle}>50/mo</td>
-                  <td style={tdStyle}>100/mo</td>
-                  <td style={tdStyle}>Custom</td>
-                </tr>
-                <tr style={{ backgroundColor: '#1a1a2e' }}>
-                  <td style={tdStyle}>Redirects</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>25/mo</td>
-                  <td style={tdStyle}>110/mo</td>
-                  <td style={tdStyle}>Custom</td>
-                </tr>
-                <tr>
-                  <td style={tdStyle}>Branded Links</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>✓</td>
-                  <td style={tdStyle}>✓</td>
-                  <td style={tdStyle}>✓</td>
-                </tr>
-                <tr style={{ backgroundColor: '#1a1a2e' }}>
-                  <td style={tdStyle}>Auto Branded Links</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>Custom</td>
-                </tr>
-                <tr>
-                  <td style={tdStyle}>Custom Back Halves</td>
-                  <td style={tdStyle}>3/mo</td>
-                  <td style={tdStyle}>100/mo</td>
-                  <td style={tdStyle}>500/mo</td>
-                  <td style={tdStyle}>Custom</td>
-                </tr>
-                <tr style={{ backgroundColor: '#1a1a2e' }}>
-                  <td style={tdStyle}>Link Clicks</td>
-                  <td style={tdStyle}>Unlimited</td>
-                  <td style={tdStyle}>Unlimited</td>
-                  <td style={tdStyle}>Unlimited</td>
-                  <td style={tdStyle}>Unlimited</td>
-                </tr>
-                <tr>
-                  <td style={tdStyle}>Mobile Deep Links</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>✓</td>
-                </tr>
-                <tr style={{ backgroundColor: '#1a1a2e' }}>
-                  <td style={tdStyle}>Mobile</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>--</td>
-                  <td style={tdStyle}>100/upload</td>
-                  <td style={tdStyle}>3000/upload</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+  <div className="row mt-5">
+    <h1 style={{ fontWeight: '700' }}>Detailed Feature Comparison</h1>
+    <div className="col-12 mt-3">
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: '600px' }}>
+          <tbody>
+            <tr>
+              <th style={thStyle} colSpan={5}>Link Management</th>
+            </tr>
+            <tr>
+              <td style={tdStyle}>Short Links</td>
+              <td style={tdStyle}>5/mo</td>
+              <td style={tdStyle}>50/mo</td>
+              <td style={tdStyle}>100/mo</td>
+              <td style={tdStyle}>Custom</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a1a2e' }}>
+              <td style={tdStyle}>Redirects</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>25/mo</td>
+              <td style={tdStyle}>110/mo</td>
+              <td style={tdStyle}>Custom</td>
+            </tr>
+            <tr>
+              <td style={tdStyle}>Branded Links</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>✓</td>
+              <td style={tdStyle}>✓</td>
+              <td style={tdStyle}>✓</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a1a2e' }}>
+              <td style={tdStyle}>Auto Branded Links</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>Custom</td>
+            </tr>
+            <tr>
+              <td style={tdStyle}>Custom Back Halves</td>
+              <td style={tdStyle}>3/mo</td>
+              <td style={tdStyle}>100/mo</td>
+              <td style={tdStyle}>500/mo</td>
+              <td style={tdStyle}>Custom</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a1a2e' }}>
+              <td style={tdStyle}>Link Clicks</td>
+              <td style={tdStyle}>Unlimited</td>
+              <td style={tdStyle}>Unlimited</td>
+              <td style={tdStyle}>Unlimited</td>
+              <td style={tdStyle}>Unlimited</td>
+            </tr>
+            <tr>
+              <td style={tdStyle}>Mobile Deep Links</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>✓</td>
+            </tr>
+            <tr style={{ backgroundColor: '#1a1a2e' }}>
+              <td style={tdStyle}>Mobile</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>--</td>
+              <td style={tdStyle}>100/upload</td>
+              <td style={tdStyle}>3000/upload</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
+  </div>
+</div>
+
+
+
     </div>
   );
 }
