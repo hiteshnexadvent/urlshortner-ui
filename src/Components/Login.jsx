@@ -12,7 +12,7 @@ export default function Login() {
 
   // const [captchaToken, setCaptchaToken] = useState(null);
 
-  const [message, setMessage] = useState('');
+  const [message] = useState('');
 
 
 
