@@ -26,51 +26,79 @@ export default function Premium() {
   }, []);
 
   const handleChoosePlan = async (plan) => {
+
+    const planAmounts = {
+    Advance: 20000,
+    Premium: 20000,
+  };
+
+  // Check if plan needs payment
+  if (plan === "Advance" || plan === "Premium") {
+    try {
+      const orderRes = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/payment`, {
+        amount: planAmounts[plan]
+      }, { withCredentials: true });
+
+      const { id: order_id, amount, currency } = orderRes.data;
+
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID, 
+        amount,
+        currency,
+        name: "Link Crisp",
+        description: `₹{plan} Plan Purchase`,
+        order_id,
+        handler: async function (response) {
+          try {
+            const upgradeRes = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/choose-plan`, {
+              plan,
+              paymentId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              signature: response.razorpay_signature
+            }, { withCredentials: true });
+
+            if (upgradeRes.status === 200 && upgradeRes.data.success) {
+              toast.success(upgradeRes.data.message, { autoClose: 2000 });
+              setUserPlan(plan);
+            }
+          } catch (err) {
+            toast.error("Payment done but plan upgrade failed.", { autoClose: 2000 });
+          }
+        },
+        prefill: {
+          name: "User Name", // Optional
+          email: "user@example.com" // Optional
+        },
+        theme: {
+          color: plan === "Advance" ? "#9b59b6" : "#f39c12"
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong with payment.", { autoClose: 2000 });
+    }
+  } else {
+    // Basic plan is free
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/choose-plan`, {
         plan
       }, { withCredentials: true });
 
       if (response.status === 200 && response.data.success) {
-        toast.success(response.data.message, {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: true,
-          progress: undefined,
-        });
+        toast.success(response.data.message, { autoClose: 2000 });
         setUserPlan(plan);
       }
     } catch (error) {
-  const status = error.response?.status;
-  const message = error.response?.data?.message || "Server Error";
-
-  if ([400, 401, 404, 409].includes(status)) {
-    toast.error(message, {
-      position: 'top-right',
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-      progress: undefined,
-    });
-  } else {
-    toast.error("Something went wrong. Please try again later.", {
-      position: 'top-right',
-      autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: true,
-      progress: undefined,
-    });
+      const status = error.response?.status;
+      const message = error.response?.data?.message || "Server Error";
+      toast.error(message, { autoClose: 2000 });
+    }
   }
-}
-
-  }
+};
 
   if (loading) return <div style={{ color: 'white', textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
 
@@ -89,7 +117,7 @@ export default function Premium() {
             {/* Basic Plan Card */}
             <div style={cardStyle('#1a1a2e')}>
               <h2 style={{ color: '#4da6ff', fontSize: '28px' }}>Basic</h2>
-              <p style={priceStyle}>$0 / mo</p>
+              <p style={priceStyle}>₹0 / mo</p>
               <ul style={ulStyle}>
                 <li>✓ 5 URLs / day</li>
                 <li>✓ URL Expiry in 30 days</li>
@@ -101,7 +129,7 @@ export default function Premium() {
             {/* Advance Plan Card */}
             <div style={cardStyle('#1e1b35')}>
               <h2 style={{ color: '#9b59b6', fontSize: '28px' }}>Advance</h2>
-              <p style={priceStyle}>$9 / mo</p>
+              <p style={priceStyle}>₹200 / mo</p>
               <ul style={ulStyle}>
                 <li>✓ Unlimited URLs</li>
                 <li>✓ Analytics & Clicks</li>
@@ -113,7 +141,7 @@ export default function Premium() {
             {/* Premium Plan Card */}
             <div style={cardStyle('#2b1d0e')}>
               <h2 style={{ color: '#f39c12', fontSize: '28px' }}>Premium</h2>
-              <p style={priceStyle}>$19 / mo</p>
+              <p style={priceStyle}>₹200 / mo</p>
               <ul style={ulStyle}>
                 <li>✓ Everything in Advance</li>
                 <li>✓ API Access</li>
@@ -127,7 +155,7 @@ export default function Premium() {
         {userPlan === 'Advance' && (
           <div style={cardStyle('#2b1d0e')}>
             <h2 style={{ color: '#f39c12', fontSize: '28px' }}>Premium</h2>
-            <p style={priceStyle}>$19 / mo</p>
+            <p style={priceStyle}>₹200 / mo</p>
             <ul style={ulStyle}>
               <li>✓ Everything in Advance</li>
               <li>✓ API Access</li>
